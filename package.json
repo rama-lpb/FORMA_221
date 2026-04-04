@@ -1,0 +1,23 @@
+{
+  "name": "forma-221",
+  "version": "1.0.0",
+  "description": "Gestion d'un centre de formation - FORMA 221",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
+  },
+  "keywords": [
+    "formation",
+    "gestion",
+    "express"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^9.0.0"
+  }
+}
