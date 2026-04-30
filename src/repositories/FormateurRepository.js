@@ -20,6 +20,13 @@ class FormateurRepository {
     return [...this.formateurs];
   }
 
+  update(id, updates) {
+    const formateur = this.findById(id);
+    if (!formateur) return null;
+    Object.assign(formateur, updates);
+    return formateur;
+  }
+
   delete(id) {
     const index = this.formateurs.findIndex(f => f.id === id);
     if (index === -1) return false;

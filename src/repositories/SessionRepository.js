@@ -28,6 +28,13 @@ class SessionRepository {
     return [...this._sessions];
   }
 
+  update(id, updates) {
+    const session = this.findById(id);
+    if (!session) return null;
+    Object.assign(session, updates);
+    return session;
+  }
+
   delete(id) {
     const index = this._sessions.findIndex(s => s.id === id);
     if (index === -1) return false;

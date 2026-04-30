@@ -12,14 +12,11 @@ class InscriptionService {
   }
 
   create(data) {
-    if (!data.sessionId) {
-      throw new ValidationError('L\'ID de la session est obligatoire');
-    }
+    const sessionId = Validator.validateRequiredString(data.sessionId, 'L\'ID de la session', 1);
 
     const nomParticipant = Validator.validateRequiredString(data.nomParticipant, 'Le nom du participant');
     const email = Validator.validateEmail(data.email);
     const telephone = Validator.validatePhone(data.telephone);
-    const sessionId = data.sessionId;
 
     const dateInscription = data.dateInscription 
       ? Validator.validateDate(data.dateInscription, 'La date d\'inscription', false)
@@ -53,20 +50,15 @@ class InscriptionService {
       statut: InscriptionStatus.CONFIRMEE
     });
 
-    return {
-      success: true,
-      message: 'Participant inscrit avec succès',
-      data: this.inscriptionRepository.save(inscription, sessionId, this.sessionRepository.sessions)
-    };
+    return this.inscriptionRepository.save(inscription, sessionId, this.sessionRepository.sessions);
+  }
+
+  createForSession(sessionId, data) {
+    return this.create({ ...data, sessionId });
   }
 
   getAll() {
-    const inscriptions = this.inscriptionRepository.findAll();
-    return {
-      success: true,
-      message: `${inscriptions.length} inscription(s) trouvée(s)`,
-      data: inscriptions
-    };
+    return this.inscriptionRepository.findAll();
   }
 
   getById(id) {
@@ -74,20 +66,93 @@ class InscriptionService {
     if (!inscription) {
       throw new NotFoundError('Inscription', id);
     }
-    return {
-      success: true,
-      message: 'Inscription trouvée',
-      data: inscription
-    };
+    return inscription;
   }
 
   getBySessionId(sessionId) {
-    const inscriptions = this.inscriptionRepository.findBySessionId(sessionId);
-    return {
-      success: true,
-      message: `${inscriptions.length} inscription(s) trouvée(s) pour cette session`,
-      data: inscriptions
-    };
+    return this.inscriptionRepository.findBySessionId(sessionId);
+  }
+
+  delete(id) {
+    const existing = this.inscriptionRepository.findById(id);
+    if (!existing) {
+      throw new NotFoundError('Inscription', id);
+    }
+    this.inscriptionRepository.delete(id, this.sessionRepository.sessions);
+    return;
+  }
+
+  update(id, data) {
+    const existing = this.inscriptionRepository.findById(id);
+    if (!existing) {
+      throw new NotFoundError('Inscription', id);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(data, 'sessionId') && data.sessionId !== existing.sessionId) {
+      throw new ValidationError('Le changement de session n\'est pas autorisé (supprimez puis recréez)');
+    }
+
+    const nomParticipant = Validator.validateRequiredString(data.nomParticipant, 'Le nom du participant');
+    const email = Validator.validateEmail(data.email);
+    const telephone = Validator.validatePhone(data.telephone);
+
+    if (email !== existing.email) {
+      const conflict = this.inscriptionRepository.findByEmailAndSession(email, existing.sessionId);
+      if (conflict) {
+        throw new ConflictError('Cet email est déjà inscrit à cette session');
+      }
+    }
+
+    const updates = { nomParticipant, email, telephone };
+
+    if (Object.prototype.hasOwnProperty.call(data, 'statut')) {
+      updates.statut = Validator.validateEnum(data.statut, 'Le statut', Object.values(InscriptionStatus));
+    }
+
+    const updated = this.inscriptionRepository.update(id, updates);
+
+    return updated;
+  }
+
+  patch(id, data) {
+    const existing = this.inscriptionRepository.findById(id);
+    if (!existing) {
+      throw new NotFoundError('Inscription', id);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(data, 'sessionId') && data.sessionId !== existing.sessionId) {
+      throw new ValidationError('Le changement de session n\'est pas autorisé (supprimez puis recréez)');
+    }
+
+    const updates = {};
+
+    if (Object.prototype.hasOwnProperty.call(data, 'nomParticipant')) {
+      updates.nomParticipant = Validator.validateRequiredString(data.nomParticipant, 'Le nom du participant');
+    }
+    if (Object.prototype.hasOwnProperty.call(data, 'email')) {
+      const email = Validator.validateEmail(data.email);
+      if (email !== existing.email) {
+        const conflict = this.inscriptionRepository.findByEmailAndSession(email, existing.sessionId);
+        if (conflict) {
+          throw new ConflictError('Cet email est déjà inscrit à cette session');
+        }
+      }
+      updates.email = email;
+    }
+    if (Object.prototype.hasOwnProperty.call(data, 'telephone')) {
+      updates.telephone = Validator.validatePhone(data.telephone);
+    }
+    if (Object.prototype.hasOwnProperty.call(data, 'statut')) {
+      updates.statut = Validator.validateEnum(data.statut, 'Le statut', Object.values(InscriptionStatus));
+    }
+
+    if (Object.keys(updates).length === 0) {
+      throw new ValidationError('Aucun champ à mettre à jour');
+    }
+
+    const updated = this.inscriptionRepository.update(id, updates);
+
+    return updated;
   }
 }
 

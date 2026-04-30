@@ -18,17 +18,22 @@ const options = {
         description: 'Serveur local'
       }
     ],
-    components: {
-      schemas: {
-        Formateur: {
-          type: 'object',
-          required: ['prenom', 'nom', 'email', 'telephone', 'specialite'],
-          properties: {
-            prenom: { 
-              type: 'string', 
-              example: 'Moussa',
-              description: 'Prénom du formateur (min 2 caractères)' 
-            },
+	    components: {
+	      schemas: {
+	        Formateur: {
+	          type: 'object',
+	          required: ['prenom', 'nom', 'email', 'telephone', 'specialite'],
+	          properties: {
+	            id: {
+	              type: 'string',
+	              readOnly: true,
+	              description: 'ID unique du formateur'
+	            },
+	            prenom: { 
+	              type: 'string', 
+	              example: 'Moussa',
+	              description: 'Prénom du formateur (min 2 caractères)' 
+	            },
             nom: { 
               type: 'string', 
               example: 'Sarr',
@@ -51,15 +56,20 @@ const options = {
             }
           }
         },
-        Formation: {
-          type: 'object',
-          required: ['code', 'titre', 'duree', 'prix', 'niveau'],
-          properties: {
-            code: { 
-              type: 'string', 
-              example: 'DEV001',
-              description: 'Code unique de la formation' 
-            },
+	        Formation: {
+	          type: 'object',
+	          required: ['code', 'titre', 'duree', 'prix', 'niveau'],
+	          properties: {
+	            id: {
+	              type: 'string',
+	              readOnly: true,
+	              description: 'ID unique de la formation'
+	            },
+	            code: { 
+	              type: 'string', 
+	              example: 'DEV001',
+	              description: 'Code unique de la formation' 
+	            },
             titre: { 
               type: 'string', 
               example: 'Développement Web Avancé',
@@ -83,15 +93,20 @@ const options = {
             }
           }
         },
-        Session: {
-          type: 'object',
-          required: ['formationId', 'formateurId', 'dateDebut', 'dateFin', 'placesMax'],
-          properties: {
-            formationId: { 
-              type: 'string', 
-              example: 'uuid-formation',
-              description: 'ID de la formation' 
-            },
+	        Session: {
+	          type: 'object',
+	          required: ['formationId', 'formateurId', 'dateDebut', 'dateFin', 'placesMax'],
+	          properties: {
+	            id: {
+	              type: 'string',
+	              readOnly: true,
+	              description: 'ID unique de la session'
+	            },
+	            formationId: { 
+	              type: 'string', 
+	              example: 'uuid-formation',
+	              description: 'ID de la formation' 
+	            },
             formateurId: { 
               type: 'string', 
               example: 'uuid-formateur',
@@ -116,15 +131,20 @@ const options = {
             }
           }
         },
-        Inscription: {
-          type: 'object',
-          required: ['nomParticipant', 'email', 'telephone', 'sessionId'],
-          properties: {
-            nomParticipant: { 
-              type: 'string', 
-              example: 'Aminata Diallo',
-              description: 'Nom du participant' 
-            },
+	        Inscription: {
+	          type: 'object',
+	          required: ['nomParticipant', 'email', 'telephone', 'sessionId'],
+	          properties: {
+	            id: {
+	              type: 'string',
+	              readOnly: true,
+	              description: 'ID unique de l\'inscription'
+	            },
+	            nomParticipant: { 
+	              type: 'string', 
+	              example: 'Aminata Diallo',
+	              description: 'Nom du participant' 
+	            },
             email: { 
               type: 'string', 
               example: 'aminata.diallo@email.sn',
@@ -148,23 +168,151 @@ const options = {
             }
           }
         },
-        SuccessResponse: {
-          type: 'object',
-          properties: {
-            success: { type: 'boolean', example: true },
-            message: { type: 'string', example: 'Opération réussie' },
-            data: { type: 'object', description: 'Données de la réponse' }
-          }
-        },
-        ErrorResponse: {
-          type: 'object',
-          properties: {
-            success: { type: 'boolean', example: false },
-            message: { type: 'string', example: 'Description de l\'erreur' }
-          }
-        }
-      }
-    },
+	        Link: {
+	          type: 'object',
+	          required: ['href'],
+	          properties: {
+	            href: { type: 'string', example: '/api/formateurs/uuid' }
+	          }
+	        },
+	        ProblemDetails: {
+	          type: 'object',
+	          required: ['type', 'title', 'status', 'detail', 'instance'],
+	          properties: {
+	            type: { type: 'string', example: 'about:blank' },
+	            title: { type: 'string', example: 'Request Error' },
+	            status: { type: 'integer', example: 400 },
+	            detail: { type: 'string', example: 'Le téléphone est obligatoire' },
+	            instance: { type: 'string', example: '/api/formateurs' }
+	          }
+	        },
+	        FormateurResource: {
+	          allOf: [
+	            { $ref: '#/components/schemas/Formateur' },
+	            {
+	              type: 'object',
+	              required: ['_links'],
+	              properties: {
+	                _links: {
+	                  type: 'object',
+	                  properties: {
+	                    self: { $ref: '#/components/schemas/Link' },
+	                    collection: { $ref: '#/components/schemas/Link' }
+	                  }
+	                }
+	              }
+	            }
+	          ]
+	        },
+	        FormationResource: {
+	          allOf: [
+	            { $ref: '#/components/schemas/Formation' },
+	            {
+	              type: 'object',
+	              required: ['_links'],
+	              properties: {
+	                _links: {
+	                  type: 'object',
+	                  properties: {
+	                    self: { $ref: '#/components/schemas/Link' },
+	                    collection: { $ref: '#/components/schemas/Link' }
+	                  }
+	                }
+	              }
+	            }
+	          ]
+	        },
+	        SessionResource: {
+	          allOf: [
+	            { $ref: '#/components/schemas/Session' },
+	            {
+	              type: 'object',
+	              required: ['_links'],
+	              properties: {
+	                _links: {
+	                  type: 'object',
+	                  properties: {
+	                    self: { $ref: '#/components/schemas/Link' },
+	                    collection: { $ref: '#/components/schemas/Link' },
+	                    formation: { $ref: '#/components/schemas/Link' },
+	                    formateur: { $ref: '#/components/schemas/Link' },
+	                    inscriptions: { $ref: '#/components/schemas/Link' }
+	                  }
+	                }
+	              }
+	            }
+	          ]
+	        },
+	        InscriptionResource: {
+	          allOf: [
+	            { $ref: '#/components/schemas/Inscription' },
+	            {
+	              type: 'object',
+	              required: ['_links'],
+	              properties: {
+	                _links: {
+	                  type: 'object',
+	                  properties: {
+	                    self: { $ref: '#/components/schemas/Link' },
+	                    collection: { $ref: '#/components/schemas/Link' },
+	                    session: { $ref: '#/components/schemas/Link' },
+	                    sessionInscriptions: { $ref: '#/components/schemas/Link' }
+	                  }
+	                }
+	              }
+	            }
+	          ]
+	        },
+	        FormateurCollection: {
+	          type: 'object',
+	          required: ['count', 'items', '_links'],
+	          properties: {
+	            count: { type: 'integer', example: 1 },
+	            items: { type: 'array', items: { $ref: '#/components/schemas/FormateurResource' } },
+	            _links: {
+	              type: 'object',
+	              properties: { self: { $ref: '#/components/schemas/Link' } }
+	            }
+	          }
+	        },
+	        FormationCollection: {
+	          type: 'object',
+	          required: ['count', 'items', '_links'],
+	          properties: {
+	            count: { type: 'integer', example: 1 },
+	            items: { type: 'array', items: { $ref: '#/components/schemas/FormationResource' } },
+	            _links: {
+	              type: 'object',
+	              properties: { self: { $ref: '#/components/schemas/Link' } }
+	            }
+	          }
+	        },
+	        SessionCollection: {
+	          type: 'object',
+	          required: ['count', 'items', '_links'],
+	          properties: {
+	            count: { type: 'integer', example: 1 },
+	            items: { type: 'array', items: { $ref: '#/components/schemas/SessionResource' } },
+	            _links: {
+	              type: 'object',
+	              properties: { self: { $ref: '#/components/schemas/Link' } }
+	            }
+	          }
+	        },
+	        InscriptionCollection: {
+	          type: 'object',
+	          required: ['count', 'items', '_links'],
+	          properties: {
+	            count: { type: 'integer', example: 1 },
+	            items: { type: 'array', items: { $ref: '#/components/schemas/InscriptionResource' } },
+	            _links: {
+	              type: 'object',
+	              properties: { self: { $ref: '#/components/schemas/Link' } }
+	            }
+	          }
+	        }
+	      }
+	    },
     paths: {
       '/formateurs': {
         post: {
@@ -185,72 +333,143 @@ const options = {
               }
             }
           },
-          responses: {
-            '200': { 
-              description: 'Formateur créé avec succès',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
-            },
-            '400': { 
-              description: 'Erreur de validation',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
-            },
-            '409': { 
-              description: 'Conflit - Email déjà existant',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
-            }
-          }
-        },
-        get: {
-          summary: 'Liste des formateurs',
-          tags: ['Formateurs'],
-          responses: {
-            '200': { 
-              description: 'Liste des formateurs',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
-            }
-          }
-        }
-      },
+	          responses: {
+	            '201': { 
+	              description: 'Formateur créé avec succès',
+	              headers: {
+	                Location: { schema: { type: 'string' }, description: 'URL de la ressource créée' }
+	              },
+	              content: { 'application/json': { schema: { $ref: '#/components/schemas/FormateurResource' } } }
+	            },
+	            '400': { 
+	              description: 'Erreur de validation',
+	              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+	            },
+	            '409': { 
+	              description: 'Conflit - Email déjà existant',
+	              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+	            }
+	          }
+	        },
+	        get: {
+	          summary: 'Liste des formateurs',
+	          tags: ['Formateurs'],
+	          responses: {
+	            '200': { 
+	              description: 'Liste des formateurs',
+	              content: { 'application/json': { schema: { $ref: '#/components/schemas/FormateurCollection' } } }
+	            }
+	          }
+	        }
+	      },
       '/formateurs/{id}': {
-        get: {
+	        get: {
           summary: 'Obtenir un formateur par ID',
           tags: ['Formateurs'],
           parameters: [
             { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID du formateur' }
           ],
-          responses: {
-            '200': { 
-              description: 'Formateur trouvé',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
-            },
-            '404': { 
-              description: 'Formateur non trouvé',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+	          responses: {
+	            '200': { 
+	              description: 'Formateur trouvé',
+	              content: { 'application/json': { schema: { $ref: '#/components/schemas/FormateurResource' } } }
+	            },
+	            '404': { 
+	              description: 'Formateur non trouvé',
+	              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+	            }
+	          }
+	        },
+	        put: {
+          summary: 'Remplacer un formateur (PUT)',
+          tags: ['Formateurs'],
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID du formateur' }
+          ],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Formateur' } } }
+          },
+	          responses: {
+	            '200': {
+	              description: 'Formateur mis à jour',
+	              content: { 'application/json': { schema: { $ref: '#/components/schemas/FormateurResource' } } }
+	            },
+	            '400': {
+	              description: 'Erreur de validation',
+	              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+	            },
+	            '404': {
+	              description: 'Formateur non trouvé',
+	              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+	            },
+	            '409': {
+	              description: 'Conflit - Email déjà existant',
+	              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+	            }
+	          }
+	        },
+	        patch: {
+          summary: 'Modifier partiellement un formateur (PATCH)',
+          tags: ['Formateurs'],
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID du formateur' }
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    prenom: { type: 'string' },
+                    nom: { type: 'string' },
+                    email: { type: 'string' },
+                    telephone: { type: 'string' },
+                    specialite: { type: 'string' }
+                  }
+                }
+              }
             }
-          }
-        },
-        delete: {
+          },
+	          responses: {
+	            '200': {
+	              description: 'Formateur mis à jour',
+	              content: { 'application/json': { schema: { $ref: '#/components/schemas/FormateurResource' } } }
+	            },
+	            '400': {
+	              description: 'Erreur de validation',
+	              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+	            },
+	            '404': {
+	              description: 'Formateur non trouvé',
+	              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+	            },
+	            '409': {
+	              description: 'Conflit - Email déjà existant',
+	              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+	            }
+	          }
+	        },
+	        delete: {
           summary: 'Supprimer un formateur',
           tags: ['Formateurs'],
           parameters: [
             { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID du formateur' }
           ],
-          responses: {
-            '200': { 
-              description: 'Formateur supprimé',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
-            },
-            '400': { 
-              description: 'Impossible de supprimer - sessions existantes',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
-            },
-            '404': { 
-              description: 'Formateur non trouvé',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
-            }
-          }
-        }
-      },
+	          responses: {
+	            '204': { description: 'Formateur supprimé' },
+	            '400': { 
+	              description: 'Impossible de supprimer - sessions existantes',
+	              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+	            },
+	            '404': { 
+	              description: 'Formateur non trouvé',
+	              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+	            }
+	          }
+	        }
+	      },
       '/formations': {
         post: {
           summary: 'Créer une formation',
@@ -271,17 +490,20 @@ const options = {
             }
           },
           responses: {
-            '200': { 
+            '201': { 
               description: 'Formation créée avec succès',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+              headers: {
+                Location: { schema: { type: 'string' }, description: 'URL de la ressource créée' }
+              },
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/FormationResource' } } }
             },
             '400': { 
               description: 'Erreur de validation',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             },
             '409': { 
               description: 'Conflit - Code déjà existant',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             }
           }
         },
@@ -291,7 +513,7 @@ const options = {
           responses: {
             '200': { 
               description: 'Liste des formations',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/FormationCollection' } } }
             }
           }
         }
@@ -306,11 +528,82 @@ const options = {
           responses: {
             '200': { 
               description: 'Formation trouvée',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/FormationResource' } } }
             },
             '404': { 
               description: 'Formation non trouvée',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            }
+          }
+        },
+        put: {
+          summary: 'Remplacer une formation (PUT)',
+          tags: ['Formations'],
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de la formation' }
+          ],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Formation' } } }
+          },
+          responses: {
+            '200': {
+              description: 'Formation mise à jour',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/FormationResource' } } }
+            },
+            '400': {
+              description: 'Erreur de validation',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            },
+            '404': {
+              description: 'Formation non trouvée',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            },
+            '409': {
+              description: 'Conflit - Code déjà existant',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            }
+          }
+        },
+        patch: {
+          summary: 'Modifier partiellement une formation (PATCH)',
+          tags: ['Formations'],
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de la formation' }
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    code: { type: 'string' },
+                    titre: { type: 'string' },
+                    duree: { type: 'integer' },
+                    prix: { type: 'number' },
+                    niveau: { type: 'string', enum: ['DEBUTANT', 'INTERMEDIAIRE', 'AVANCE'] }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Formation mise à jour',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/FormationResource' } } }
+            },
+            '400': {
+              description: 'Erreur de validation',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            },
+            '404': {
+              description: 'Formation non trouvée',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            },
+            '409': {
+              description: 'Conflit - Code déjà existant',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             }
           }
         },
@@ -321,17 +614,14 @@ const options = {
             { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de la formation' }
           ],
           responses: {
-            '200': { 
-              description: 'Formation supprimée',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
-            },
+            '204': { description: 'Formation supprimée' },
             '400': { 
               description: 'Impossible de supprimer - sessions existantes',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             },
             '404': { 
               description: 'Formation non trouvée',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             }
           }
         }
@@ -356,17 +646,20 @@ const options = {
             }
           },
           responses: {
-            '200': { 
+            '201': { 
               description: 'Session créée avec succès',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+              headers: {
+                Location: { schema: { type: 'string' }, description: 'URL de la ressource créée' }
+              },
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/SessionResource' } } }
             },
             '400': { 
               description: 'Erreur de validation (dates invalides, chevauchement, etc.)',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             },
             '404': { 
               description: 'Formation ou formateur non trouvé',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             }
           }
         },
@@ -376,7 +669,7 @@ const options = {
           responses: {
             '200': { 
               description: 'Liste des sessions',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/SessionCollection' } } }
             }
           }
         }
@@ -391,11 +684,75 @@ const options = {
           responses: {
             '200': { 
               description: 'Session trouvée',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/SessionResource' } } }
             },
             '404': { 
               description: 'Session non trouvée',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            }
+          }
+        },
+        put: {
+          summary: 'Remplacer une session (PUT)',
+          tags: ['Sessions'],
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de la session' }
+          ],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Session' } } }
+          },
+          responses: {
+            '200': {
+              description: 'Session mise à jour',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/SessionResource' } } }
+            },
+            '400': {
+              description: 'Erreur de validation',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            },
+            '404': {
+              description: 'Session / formation / formateur non trouvé',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            }
+          }
+        },
+        patch: {
+          summary: 'Modifier partiellement une session (PATCH)',
+          tags: ['Sessions'],
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de la session' }
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    formationId: { type: 'string' },
+                    formateurId: { type: 'string' },
+                    dateDebut: { type: 'string', format: 'date' },
+                    dateFin: { type: 'string', format: 'date' },
+                    placesMax: { type: 'integer' },
+                    statut: { type: 'string', enum: ['OUVERTE', 'COMPLETE', 'ANNULEE', 'TERMINEE'] }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Session mise à jour',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/SessionResource' } } }
+            },
+            '400': {
+              description: 'Erreur de validation',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            },
+            '404': {
+              description: 'Session / formation / formateur non trouvé',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             }
           }
         },
@@ -406,65 +763,86 @@ const options = {
             { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de la session' }
           ],
           responses: {
-            '200': { 
-              description: 'Session supprimée',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
-            },
+            '204': { description: 'Session supprimée' },
             '400': { 
               description: 'Impossible de supprimer - inscriptions confirmées',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             },
             '404': { 
               description: 'Session non trouvée',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             }
           }
         }
       },
-      '/inscriptions': {
+      '/sessions/{sessionId}/inscriptions': {
         post: {
-          summary: 'Inscrire un participant',
+          summary: 'Inscrire un participant à une session (REST)',
           tags: ['Inscriptions'],
           requestBody: {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/Inscription' },
-                example: {
-                  nomParticipant: 'Aminata Diallo',
-                  email: 'aminata.diallo@email.sn',
-                  telephone: '771234567',
-                  sessionId: 'uuid-session'
+                schema: {
+                  type: 'object',
+                  required: ['nomParticipant', 'email', 'telephone'],
+                  properties: {
+                    nomParticipant: { type: 'string' },
+                    email: { type: 'string' },
+                    telephone: { type: 'string' },
+                    dateInscription: { type: 'string', format: 'date' }
+                  }
                 }
               }
             }
           },
+          parameters: [
+            { name: 'sessionId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de la session' }
+          ],
           responses: {
-            '200': { 
+            '201': {
               description: 'Inscription créée avec succès',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+              headers: {
+                Location: { schema: { type: 'string' }, description: 'URL de la ressource créée' }
+              },
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/InscriptionResource' } } }
             },
-            '400': { 
+            '400': {
               description: 'Erreur de validation (session pleine, non ouverte, etc.)',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             },
-            '404': { 
+            '404': {
               description: 'Session non trouvée',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             },
-            '409': { 
+            '409': {
               description: 'Conflit - Email déjà inscrit à cette session',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             }
           }
         },
+        get: {
+          summary: 'Liste des inscriptions d\'une session (REST)',
+          tags: ['Inscriptions'],
+          parameters: [
+            { name: 'sessionId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de la session' }
+          ],
+          responses: {
+            '200': {
+              description: 'Liste des inscriptions pour la session',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/InscriptionCollection' } } }
+            }
+          }
+        }
+      },
+      '/inscriptions': {
         get: {
           summary: 'Liste des inscriptions',
           tags: ['Inscriptions'],
           responses: {
             '200': { 
               description: 'Liste des inscriptions',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/InscriptionCollection' } } }
             }
           }
         }
@@ -479,30 +857,112 @@ const options = {
           responses: {
             '200': { 
               description: 'Inscription trouvée',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/InscriptionResource' } } }
             },
             '404': { 
               description: 'Inscription non trouvée',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            }
+          }
+        },
+        put: {
+          summary: 'Remplacer une inscription (PUT)',
+          tags: ['Inscriptions'],
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de l\'inscription' }
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['nomParticipant', 'email', 'telephone'],
+                  properties: {
+                    nomParticipant: { type: 'string' },
+                    email: { type: 'string' },
+                    telephone: { type: 'string' },
+                    statut: { type: 'string', enum: ['CONFIRMEE', 'ANNULEE'] }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Inscription mise à jour',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/InscriptionResource' } } }
+            },
+            '400': {
+              description: 'Erreur de validation',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            },
+            '404': {
+              description: 'Inscription non trouvée',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            },
+            '409': {
+              description: 'Conflit - Email déjà inscrit à cette session',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            }
+          }
+        },
+        patch: {
+          summary: 'Modifier partiellement une inscription (PATCH)',
+          tags: ['Inscriptions'],
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de l\'inscription' }
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    nomParticipant: { type: 'string' },
+                    email: { type: 'string' },
+                    telephone: { type: 'string' },
+                    statut: { type: 'string', enum: ['CONFIRMEE', 'ANNULEE'] }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Inscription mise à jour',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/InscriptionResource' } } }
+            },
+            '400': {
+              description: 'Erreur de validation',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            },
+            '404': {
+              description: 'Inscription non trouvée',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            },
+            '409': {
+              description: 'Conflit - Email déjà inscrit à cette session',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
+            }
+          }
+        },
+        delete: {
+          summary: 'Supprimer une inscription',
+          tags: ['Inscriptions'],
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de l\'inscription' }
+          ],
+          responses: {
+            '204': { description: 'Inscription supprimée' },
+            '404': {
+              description: 'Inscription non trouvée',
+              content: { 'application/problem+json': { schema: { $ref: '#/components/schemas/ProblemDetails' } } }
             }
           }
         }
       },
-      '/inscriptions/session/{sessionId}': {
-        get: {
-          summary: 'Liste des inscriptions par session',
-          tags: ['Inscriptions'],
-          parameters: [
-            { name: 'sessionId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID de la session' }
-          ],
-          responses: {
-            '200': { 
-              description: 'Liste des inscriptions pour la session',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessResponse' } } }
-            }
-          }
-        }
-      }
     }
   },
   apis: ['./src/routes/*.js']

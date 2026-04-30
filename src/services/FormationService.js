@@ -31,20 +31,11 @@ class FormationService {
       niveau: data.niveau
     });
 
-    return {
-      success: true,
-      message: 'Formation créée avec succès',
-      data: this.formationRepository.save(formation)
-    };
+    return this.formationRepository.save(formation);
   }
 
   getAll() {
-    const formations = this.formationRepository.findAll();
-    return {
-      success: true,
-      message: `${formations.length} formation(s) trouvée(s)`,
-      data: formations
-    };
+    return this.formationRepository.findAll();
   }
 
   getById(id) {
@@ -52,11 +43,7 @@ class FormationService {
     if (!formation) {
       throw new NotFoundError('Formation', id);
     }
-    return {
-      success: true,
-      message: 'Formation trouvée',
-      data: formation
-    };
+    return formation;
   }
 
   delete(id) {
@@ -71,10 +58,77 @@ class FormationService {
     }
 
     this.formationRepository.delete(id);
-    return {
-      success: true,
-      message: 'Formation supprimée avec succès'
-    };
+    return;
+  }
+
+  update(id, data) {
+    const existing = this.formationRepository.findById(id);
+    if (!existing) {
+      throw new NotFoundError('Formation', id);
+    }
+
+    const code = Validator.validateRequiredString(data.code, 'Le code', 1);
+    const titre = Validator.validateRequiredString(data.titre, 'Le titre');
+    const duree = Validator.validatePositiveInteger(data.duree, 'La durée');
+    const prix = Validator.validatePositiveNumber(data.prix, 'Le prix');
+    const niveau = Validator.validateEnum(data.niveau, 'Le niveau', Object.values(FormationLevel));
+
+    if (code !== existing.code) {
+      const conflict = this.formationRepository.findByCode(code);
+      if (conflict) {
+        throw new ConflictError('Une formation avec ce code existe déjà');
+      }
+    }
+
+    const updated = this.formationRepository.update(id, {
+      code,
+      titre,
+      duree,
+      prix,
+      niveau
+    });
+
+    return updated;
+  }
+
+  patch(id, data) {
+    const existing = this.formationRepository.findById(id);
+    if (!existing) {
+      throw new NotFoundError('Formation', id);
+    }
+
+    const updates = {};
+
+    if (Object.prototype.hasOwnProperty.call(data, 'code')) {
+      const code = Validator.validateRequiredString(data.code, 'Le code', 1);
+      if (code !== existing.code) {
+        const conflict = this.formationRepository.findByCode(code);
+        if (conflict) {
+          throw new ConflictError('Une formation avec ce code existe déjà');
+        }
+      }
+      updates.code = code;
+    }
+    if (Object.prototype.hasOwnProperty.call(data, 'titre')) {
+      updates.titre = Validator.validateRequiredString(data.titre, 'Le titre');
+    }
+    if (Object.prototype.hasOwnProperty.call(data, 'duree')) {
+      updates.duree = Validator.validatePositiveInteger(data.duree, 'La durée');
+    }
+    if (Object.prototype.hasOwnProperty.call(data, 'prix')) {
+      updates.prix = Validator.validatePositiveNumber(data.prix, 'Le prix');
+    }
+    if (Object.prototype.hasOwnProperty.call(data, 'niveau')) {
+      updates.niveau = Validator.validateEnum(data.niveau, 'Le niveau', Object.values(FormationLevel));
+    }
+
+    if (Object.keys(updates).length === 0) {
+      throw new ValidationError('Aucun champ à mettre à jour');
+    }
+
+    const updated = this.formationRepository.update(id, updates);
+
+    return updated;
   }
 }
 

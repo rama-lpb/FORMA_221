@@ -20,6 +20,13 @@ class FormationRepository {
     return [...this.formations];
   }
 
+  update(id, updates) {
+    const formation = this.findById(id);
+    if (!formation) return null;
+    Object.assign(formation, updates);
+    return formation;
+  }
+
   delete(id) {
     const index = this.formations.findIndex(f => f.id === id);
     if (index === -1) return false;
