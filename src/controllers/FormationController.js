@@ -1,3 +1,5 @@
+const { apiHref, toCollection, toFormationResource, toProblemDetails } = require('../utils/resources');
+
 class FormationController {
   constructor(formationService) {
     this.formationService = formationService;
@@ -5,37 +7,57 @@ class FormationController {
 
   create(req, res) {
     try {
-      const result = this.formationService.create(req.body);
-      return res.status(200).json(result);
+      const created = this.formationService.create(req.body);
+      res.set('Location', apiHref(req, `/formations/${created.id}`));
+      return res.status(201).json(toFormationResource(req, created));
     } catch (error) {
-      return res.status(error.statusCode || 500).json({ success: false, message: error.message });
+      return res.status(error.statusCode || 500).type('application/problem+json').json(toProblemDetails(req, error));
     }
   }
 
   getAll(req, res) {
     try {
-      const result = this.formationService.getAll();
-      return res.status(200).json(result);
+      const formations = this.formationService.getAll();
+      const items = formations.map(f => toFormationResource(req, f));
+      return res.status(200).json(toCollection(req, items));
     } catch (error) {
-      return res.status(error.statusCode || 500).json({ success: false, message: error.message });
+      return res.status(error.statusCode || 500).type('application/problem+json').json(toProblemDetails(req, error));
     }
   }
 
   getById(req, res) {
     try {
-      const result = this.formationService.getById(req.params.id);
-      return res.status(200).json(result);
+      const formation = this.formationService.getById(req.params.id);
+      return res.status(200).json(toFormationResource(req, formation));
     } catch (error) {
-      return res.status(error.statusCode || 500).json({ success: false, message: error.message });
+      return res.status(error.statusCode || 500).type('application/problem+json').json(toProblemDetails(req, error));
     }
   }
 
   delete(req, res) {
     try {
-      const result = this.formationService.delete(req.params.id);
-      return res.status(200).json(result);
+      this.formationService.delete(req.params.id);
+      return res.status(204).send();
     } catch (error) {
-      return res.status(error.statusCode || 500).json({ success: false, message: error.message });
+      return res.status(error.statusCode || 500).type('application/problem+json').json(toProblemDetails(req, error));
+    }
+  }
+
+  update(req, res) {
+    try {
+      const updated = this.formationService.update(req.params.id, req.body);
+      return res.status(200).json(toFormationResource(req, updated));
+    } catch (error) {
+      return res.status(error.statusCode || 500).type('application/problem+json').json(toProblemDetails(req, error));
+    }
+  }
+
+  patch(req, res) {
+    try {
+      const updated = this.formationService.patch(req.params.id, req.body);
+      return res.status(200).json(toFormationResource(req, updated));
+    } catch (error) {
+      return res.status(error.statusCode || 500).type('application/problem+json').json(toProblemDetails(req, error));
     }
   }
 }

@@ -31,6 +31,28 @@ class InscriptionRepository {
   countBySessionId(sessionId) {
     return this.inscriptions.filter(i => i.sessionId === sessionId && i.statut === 'CONFIRMEE').length;
   }
+
+  update(id, updates) {
+    const inscription = this.findById(id);
+    if (!inscription) return null;
+    Object.assign(inscription, updates);
+    return inscription;
+  }
+
+  delete(id, sessions) {
+    const index = this.inscriptions.findIndex(i => i.id === id);
+    if (index === -1) return null;
+    const [removed] = this.inscriptions.splice(index, 1);
+
+    if (Array.isArray(sessions)) {
+      const session = sessions.find(s => s.id === removed.sessionId);
+      if (session) {
+        session.inscriptions = session.inscriptions.filter(i => i.id !== id);
+      }
+    }
+
+    return removed;
+  }
 }
 
 module.exports = InscriptionRepository;
