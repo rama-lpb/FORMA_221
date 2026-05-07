@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build-and-push:
@@ -13,6 +14,17 @@ jobs:
     steps:
       - name: Checkout du code source
         uses: actions/checkout@v4
+
+      - name: Vérifier les secrets Docker Hub
+        run: |
+          if [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
+            echo "Secret manquant: DOCKERHUB_USERNAME"
+            exit 1
+          fi
+          if [ -z "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
+            echo "Secret manquant: DOCKERHUB_TOKEN"
+            exit 1
+          fi
 
       - name: Se connecter à Docker Hub
         uses: docker/login-action@v3
